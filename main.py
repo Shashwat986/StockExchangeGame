@@ -115,6 +115,8 @@ class MessageUpdatesHandler(tornado.web.RequestHandler):
 
 def main():
     parse_command_line()
+    print("Debug Mode: ", options.debug)
+    print("Port: ", options.port)
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
