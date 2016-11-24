@@ -18,8 +18,11 @@ import logging
 import tornado.escape
 import tornado.ioloop
 import tornado.web
-import os.path
+import os
 import uuid
+
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 from tornado.concurrent import Future
 from tornado import gen
@@ -118,7 +121,7 @@ def main():
             (r"/a/message/new", MessageNewHandler),
             (r"/a/message/updates", MessageUpdatesHandler),
             ],
-        cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+        cookie_secret=os.environ.get("SECRET_KEY"),
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
         xsrf_cookies=True,
