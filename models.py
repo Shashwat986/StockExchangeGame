@@ -39,6 +39,15 @@ class MessageBuffer(object):
         if len(self.cache) > self.cache_size:
             self.cache = self.cache[-self.cache_size:]
 
+class GlobalMessageBuffer(object):
+  def __init__(self):
+    self.messages = {}
+
+  def find(self, game_id):
+    if game_id not in self.messages:
+      self.messages[game_id] = MessageBuffer()
+
+    return self.messages[game_id]
 
 # Making this a non-singleton is left as an exercise for the reader.
-global_message_buffer = MessageBuffer()
+global_message_buffer = GlobalMessageBuffer()

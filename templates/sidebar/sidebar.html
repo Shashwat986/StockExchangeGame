@@ -7,7 +7,6 @@
         </div>
         <input type="submit" value="{{ _("Post") }}" class="btn waves-effect">
 
-        <input type="hidden" name="next" value="{{ request.path }}">
         {% module xsrf_form_html() %}
       </form>
     </div>

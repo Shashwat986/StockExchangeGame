@@ -35,6 +35,7 @@ def main():
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
+            (r"/game", GameHandler),
             (r"/a/message/new", MessageNewHandler),
             (r"/a/message/updates", MessageUpdatesHandler),
         ],
