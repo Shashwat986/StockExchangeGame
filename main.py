@@ -23,7 +23,7 @@ load_dotenv(find_dotenv())
 
 from tornado.options import define, options, parse_command_line
 
-define("port", default=8888, help="run on the given port", type=int)
+define("port", default=os.environ.get("PORT", 8888), help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
 
 from controllers import *
