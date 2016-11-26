@@ -29,25 +29,24 @@ define("debug", default=False, help="run in debug mode")
 from controllers import *
 
 def main():
-    parse_command_line()
-    print("Debug Mode: ", options.debug)
-    print("Port: ", options.port)
-    app = tornado.web.Application(
-        [
-            (r"/", MainHandler),
-            (r"/game", GameHandler),
-            (r"/a/message/new", MessageNewHandler),
-            (r"/a/message/updates", MessageUpdatesHandler),
-        ],
-        cookie_secret=os.environ.get("SECRET_KEY"),
-        template_path=os.path.join(os.path.dirname(__file__), "templates"),
-        static_path=os.path.join(os.path.dirname(__file__), "static"),
-        xsrf_cookies=True,
-        debug=options.debug,
-        )
-    app.listen(options.port)
-    tornado.ioloop.IOLoop.current().start()
-
+  parse_command_line()
+  print("Debug Mode: ", options.debug)
+  print("Port: ", options.port)
+  app = tornado.web.Application(
+    [
+      (r"/", MainHandler),
+      (r"/game", GameHandler),
+      (r"/a/message/new", MessageNewHandler),
+      (r"/a/message/updates", MessageUpdatesHandler),
+    ],
+    cookie_secret=os.environ.get("SECRET_KEY"),
+    template_path=os.path.join(os.path.dirname(__file__), "templates"),
+    static_path=os.path.join(os.path.dirname(__file__), "static"),
+    xsrf_cookies=True,
+    debug=options.debug,
+  )
+  app.listen(options.port)
+  tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    main()
+  main()
