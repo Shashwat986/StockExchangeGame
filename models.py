@@ -1,6 +1,25 @@
 import logging
 from tornado.concurrent import Future
 
+from mongoengine import connect, Document, DynamicDocument
+from mongoengine.fields import *
+
+import os
+
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
+
+# Connecting to the Database
+connect('database', host=os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/'))
+
+class User(Document):
+  username = StringField(required=True, unique=True)
+
+class Game(Document):
+  game_id = UUIDField(required=True, binary=False)
+  players = ListField(ReferenceField(User))
+  public = BooleanField(default=True)
+
 class MessageBuffer(object):
   def __init__(self):
     self.waiters = set()
@@ -48,6 +67,3 @@ class GlobalMessageBuffer(object):
       self.messages[game_id] = MessageBuffer()
 
     return self.messages[game_id]
-
-# Making this a non-singleton is left as an exercise for the reader.
-global_message_buffer = GlobalMessageBuffer()

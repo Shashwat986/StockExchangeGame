@@ -1,5 +1,6 @@
 .env
 __pycache__/
+databases/
 
 # swap
 [._]*.s[a-w][a-z]
