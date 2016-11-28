@@ -10,26 +10,39 @@ global_message_buffer = models.GlobalMessageBuffer()
 
 class BaseHandler(tornado.web.RequestHandler):
   def get_current_user(self):
+    if not self.get_secure_cookie("user"): return None
+
     username = self.get_secure_cookie("user").decode("utf-8")
-    if username:
-      try:
-        return models.User.objects.get(username=username)
-      except DoesNotExist:
-        return None
+    if not username: return None
+
+    try:
+      return models.User.objects.get(username=username)
+    except DoesNotExist:
+      return None
 
 class MainHandler(BaseHandler):
   def get(self):
     self.render("index.html")
   def post(self):
-    user = models.User()
-    user.username = self.get_argument('username', None)
-    if user.username:
-      try:
-        user.save()
-      except DuplicateKeyError:
-        self.write("User already exists")
-      self.set_secure_cookie("user", self.get_argument('username'))
+    if not self.get_argument('username', None): self.redirect("/")
+    username = self.get_argument('username', None)
 
+    try:
+      user = models.User.objects.get(username=username)
+    except DoesNotExist:
+      user = models.User()
+      user.username = username
+      user.save()
+
+    self.set_secure_cookie("user", self.get_argument('username'))
+    self.redirect('/')
+
+class LogoutHandler(BaseHandler):
+  @tornado.web.authenticated
+  def prepare(self):
+    self.current_user.remove_from_games()
+    self.current_user.delete()
+    self.clear_cookie("user")
     self.redirect('/')
 
 class GameHandler(BaseHandler):

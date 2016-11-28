@@ -15,10 +15,18 @@ connect('database', host=os.environ.get('MONGODB_URI', 'mongodb://localhost:2701
 class User(Document):
   username = StringField(required=True, unique=True)
 
+  def remove_from_games(self):
+    for game in Game.objects(players=self):
+      game.remove_user(self)
+
 class Game(Document):
   game_id = UUIDField(required=True, binary=False)
   players = ListField(ReferenceField(User))
   public = BooleanField(default=True)
+
+  def remove_user(self, user):
+    self.players.remove(user)
+    self.save()
 
 class MessageBuffer(object):
   def __init__(self):
