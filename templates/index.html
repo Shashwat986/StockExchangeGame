@@ -19,11 +19,12 @@
           <h3 class="center-align">Hello World</h3>
           <div class="divider"></div>
           {% if current_user %}
-            Hello {{ current_user.username }}
-            <form action="/logout" method="POST">
-              {% module xsrf_form_html() %}
-              <input type="submit" value="Logout">
-            </form>
+            <div class="right">
+              <div class="chip">
+                {{ current_user.username }}
+                <a href='/logout'><i class="material-icons close">power_settings_new</i></a>
+              </div>
+            </div>
           {% else %}
             <form action="/" method="POST">
               <input type="text" name="username">
