@@ -1,17 +1,16 @@
 <div class="row">
   <div class="col s12">
-    <div id="input">
-      <form action="/a/message/new" method="post" id="messageform">
-        <div class="input-field">
-          <input name="body" id="message" placeholder="Chat">
-        </div>
-        <input type="submit" value="{{ _("Post") }}" class="btn waves-effect">
+    <form action="/a/message/new" method="POST" id="messageform">
+      <div class="input-field">
+        <input type="text" name="body">
+        <label for="body">Chat</label>
+      </div>
+      <input type="submit" value="{{ _("Post") }}" class="btn waves-effect">
 
-        {% module xsrf_form_html() %}
-      </form>
-    </div>
+      {% module xsrf_form_html() %}
+    </form>
   </div>
-  <div id="inbox" class="col s12 flow-text" style="max-height: 400px;overflow-x:scroll;">
+  <div id="inbox" class="col s12 flow-text mT" style="max-height: 400px;overflow-x:scroll;">
     {% for message in messages %}
       {% module Template("sidebar/message.html", message=message) %}
     {% end %}

@@ -28,7 +28,6 @@ $(document).ready(function() {
     }
   });
 
-  $("#message").select();
   updater.poll();
 });
 
