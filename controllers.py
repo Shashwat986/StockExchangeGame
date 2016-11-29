@@ -20,11 +20,21 @@ class BaseHandler(tornado.web.RequestHandler):
     except DoesNotExist:
       return None
 
+  def flash(self, content):
+    self.set_secure_cookie("flash", content)
+
+  def render(self, *args, **kwargs):
+    kwargs["flash"] = self.get_secure_cookie("flash")
+    self.clear_cookie("flash")
+    super().render(*args, **kwargs)
+
 class MainHandler(BaseHandler):
   def get(self):
     self.render("index.html")
   def post(self):
-    if not self.get_argument('username', None): self.redirect("/")
+    if not self.get_argument('username', None):
+      self.flash("Invalid Username")
+      self.redirect("/")
     username = self.get_argument('username', None)
 
     try:

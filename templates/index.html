@@ -21,6 +21,11 @@
           <div class="divider"></div>
         </div>
       </div>
+      {% if flash %}
+        <div class="flash center-align blue-text text-darken-2">
+          {{ flash }}
+        </div>
+      {% end %}
       <div class="row">
         {% if current_user %}
           <div class="right">
