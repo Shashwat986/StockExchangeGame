@@ -20,6 +20,9 @@ class BaseHandler(tornado.web.RequestHandler):
     except DoesNotExist:
       return None
 
+  def set_current_user(self, user):
+    self.set_secure_cookie("user", user.username)
+
   def flash(self, content):
     self.set_secure_cookie("flash", content)
 
@@ -31,20 +34,26 @@ class BaseHandler(tornado.web.RequestHandler):
 class MainHandler(BaseHandler):
   def get(self):
     self.render("index.html")
+
   def post(self):
     if not self.get_argument('username', None):
       self.flash("Invalid Username")
       self.redirect("/")
+      return
+
     username = self.get_argument('username', None)
 
     try:
-      user = models.User.objects.get(username=username)
-    except DoesNotExist:
       user = models.User()
       user.username = username
       user.save()
+    except NotUniqueError:
+      self.flash("This username is already in use")
+      self.redirect("/")
+      return
 
-    self.set_secure_cookie("user", self.get_argument('username'))
+    self.set_current_user(user)
+    self.flash("Logged In!")
     self.redirect('/')
 
 class LogoutHandler(BaseHandler):
