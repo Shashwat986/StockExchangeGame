@@ -37,6 +37,7 @@ def main():
       (r"/", MainHandler),
       (r"/logout", LogoutHandler),
       (r"/game", GameHandler),
+      (r"/game/(.*)", GameHandler),
       (r"/a/message/new", MessageNewHandler),
       (r"/a/message/updates", MessageUpdatesHandler),
     ],

@@ -65,8 +65,10 @@ class LogoutHandler(BaseHandler):
     self.redirect('/')
 
 class GameHandler(BaseHandler):
-  def get(self):
-    g_id = self.get_query_argument('id', None)
+  def get(self, g_id = None):
+    if not g_id:
+      g_id = self.get_query_argument('id', None)
+
     if g_id and self.current_user:
       self.render("game.html", messages=global_message_buffer.find(g_id).cache)
     else:

@@ -1,7 +1,8 @@
 import logging
 from tornado.concurrent import Future
 
-from mongoengine import connect, Document, DynamicDocument
+from mongoengine import connect
+from mongoengine import Document, DynamicDocument, EmbeddedDocument
 from mongoengine.fields import *
 
 import os
@@ -12,6 +13,7 @@ load_dotenv(find_dotenv())
 # Connecting to the Database
 connect('database', host=os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/'))
 
+# User Model
 class User(Document):
   username = StringField(required=True, unique=True)
 
@@ -19,15 +21,44 @@ class User(Document):
     for game in Game.objects(players=self):
       game.remove_user(self)
 
+# Game Models
+class StockPlayerInfo(EmbeddedDocument):
+  stock_id = IntField(required=True)
+  player = ReferenceField(User)
+
+class PlayerGameInfo(EmbeddedDocument):
+  stocks = ListField(EmbeddedDocumentField(StockPlayerInfo))
+  player = ReferenceField(User)
+
+  def __init__(self, user):
+    self.player = user
+    self.save()
+
+class Stock(EmbeddedDocument):
+  name = StringField(required=True)
+  prices = ListField(IntField())
+
 class Game(Document):
   game_id = UUIDField(required=True, binary=False)
   players = ListField(ReferenceField(User))
   public = BooleanField(default=True)
+  players_info = ListField(EmbeddedDocumentField(PlayerGameInfo))
+  stocks = ListField(EmbeddedDocumentField(Stock))
+
+  def add_user(self, user):
+    self.players.add(user)
+    player_info = PlayerGameInfo(user)
+    self.players_info.add(player_info)
+    self.save()
 
   def remove_user(self, user):
     self.players.remove(user)
     self.save()
 
+  def player_count(self):
+    return len(self.players)
+
+# Message Models
 class MessageBuffer(object):
   def __init__(self):
     self.waiters = set()
