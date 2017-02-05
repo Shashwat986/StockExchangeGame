@@ -3,6 +3,15 @@ function getCookie(name) {
   return r ? r[1] : undefined;
 }
 
+function getGameId() {
+  if (getQueryStringValue("id").length > 0)
+    return getQueryStringValue("id");
+  else if (window.location.pathname.indexOf("/game/") == 0)
+    return window.location.pathname.substring(6);
+  else
+    return null;
+}
+
 function getQueryStringValue(key) {
   return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
 }

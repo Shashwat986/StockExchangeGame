@@ -33,7 +33,7 @@ $(document).ready(function() {
 
 function newMessage(form) {
   var message = form.formToDict();
-  message.id = getQueryStringValue("id")
+  message.id = getGameId("id")
 
   var disabled = form.find("input[type=submit]");
   disabled.disable();
@@ -52,7 +52,7 @@ var updater = {
   poll: function() {
     var args = {
       "_xsrf": getCookie("_xsrf"),
-      "id": getQueryStringValue("id")
+      "id": getGameId("id")
     };
 
     if (updater.cursor)

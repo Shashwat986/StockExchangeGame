@@ -47,7 +47,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class MainHandler(BaseHandler):
   def get(self):
-    self.render("index.html")
+    self.render("index.html", **{
+      'games': models.Game.objects(public=True)
+    })
 
   def post(self):
     if not self.get_argument('username', None):
@@ -79,16 +81,20 @@ class LogoutHandler(BaseHandler):
     self.redirect('/')
 
 class GameHandler(BaseHandler):
+  @tornado.web.authenticated
   def get(self, g_id = None):
     self.game_config(g_id)
     if self.game:
-      self.render("game.html", **{
-        "messages": global_message_buffer.find(self.game).all_messages(),
-        "game": self.game
-      })
-    else:
-      self.redirect("/")
+      if self.get_current_user() in self.game.players:
+        self.render("game.html", **{
+          "messages": global_message_buffer.find(self.game).all_messages(),
+          "game": self.game
+        })
+        self.finish()
 
+    self.redirect("/")
+
+  @tornado.web.authenticated
   def post(self, g_id = None):
     self.game_config(g_id)
     if not self.game:
@@ -96,10 +102,9 @@ class GameHandler(BaseHandler):
       self.game.save()
 
     user = self.get_current_user()
-    if user:
-      self.game.add_user(user)
+    self.game.add_user(user)
 
-    self.redirect("/game/" + self.game.id)
+    self.redirect("/game/" + str(self.game.id))
 
 class MessageHandler(BaseHandler):
   @tornado.web.authenticated

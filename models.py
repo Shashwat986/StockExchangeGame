@@ -44,10 +44,11 @@ class Game(Document):
   stocks = ListField(EmbeddedDocumentField(Stock))
 
   def add_user(self, user):
-    self.players.add(user)
-    player_info = PlayerGameInfo(user, self)
-    self.players_info.add(player_info)
-    self.save()
+    if user not in self.players:
+      self.players.append(user)
+      player_info = PlayerGameInfo(player=user)
+      self.players_info.append(player_info)
+      self.save()
 
   def remove_user(self, user):
     self.players.remove(user)
@@ -55,6 +56,10 @@ class Game(Document):
 
   def player_count(self):
     return len(self.players)
+
+  def save_(self):
+    self.public = True
+    self.save()
 
 # Message Models
 class Message(Document):

@@ -7,8 +7,14 @@
     <div class="col s6">
       <h4 class="center-align">New Game</h4>
     </div>
-    <div class="col s6">
-      <h4 class="center-align">Join Game</h4>
+    <div class="col s6 center-align">
+      <h4>Join Game</h4>
+      {% for game in games %}
+        <form method="POST" action="/game/{{ game.id }}">
+          {% module xsrf_form_html() %}
+          <input type="submit" value="Join" class="waves-effect waves-light btn mT">
+        </form>
+      {% end %}
     </div>
   {% else %}
     <div class="col s12">
