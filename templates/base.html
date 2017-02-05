@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Tornado Chat Demo{% end %}</title>
+
+    <link rel="stylesheet" href="{{ static_url("helper.css") }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
+
+    {% block head %}{% end %}
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <h3 class="center-align">{% block heading %}Hello World{% end %}</h3>
+          <div class="divider"></div>
+        </div>
+      </div>
+      {% if flash %}
+        <div class="flash center-align blue-text text-darken-2">
+          {{ flash }}
+        </div>
+      {% end %}
+      <div class="row">
+        {% include "login.html" %}
+      </div>
+      <div class="row">
+        {% block content %}{% end %}
+      </div>
+    </div>
+  </body>
+</html>

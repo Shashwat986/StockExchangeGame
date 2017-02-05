@@ -1,67 +1,21 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tornado Chat Demo</title>
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="{{ static_url("helper.css") }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+{% block heading %}Welcome{% end %}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="row">
-        <div class="col s12">
-          <h3 class="center-align">Hello World</h3>
-          <div class="divider"></div>
-        </div>
-      </div>
-      {% if flash %}
-        <div class="flash center-align blue-text text-darken-2">
-          {{ flash }}
-        </div>
-      {% end %}
-      <div class="row">
-        {% if current_user %}
-          <div class="right">
-            <div class="chip mT">
-              {{ current_user.username }}
-              <a href='/logout'><i class="material-icons close">power_settings_new</i></a>
-            </div>
-          </div>
-        {% else %}
-          <form action="/" method="POST">
-            <div class="input-field">
-              <input type="text" name="username" class="col s10">
-              <label for="username">Username</label>
-            </div>
-            {% module xsrf_form_html() %}
-            <input type="submit" value="Login" class="btn col s2">
-          </form>
-        {% end %}
-      </div>
-      <div class="row">
-        {% if current_user %}
-          <div class="col s6">
-            <h4 class="center-align">New Game</h4>
-          </div>
-          <div class="col s6">
-            <h4 class="center-align">Join Game</h4>
-          </div>
-        {% else %}
-          <div class="col s12">
-            <h4 class="center-align">Rules of the Game</h4>
-            <p class="flow-text">
-              Hello World
-            </p>
-          </div>
-        {% end %}
-      </div>
+{% block content %}
+  {% if current_user %}
+    <div class="col s6">
+      <h4 class="center-align">New Game</h4>
     </div>
-  </body>
-</html>
+    <div class="col s6">
+      <h4 class="center-align">Join Game</h4>
+    </div>
+  {% else %}
+    <div class="col s12">
+      <h4 class="center-align">Rules of the Game</h4>
+      <p class="flow-text">
+        Hello World
+      </p>
+    </div>
+  {% end %}
+{% end %}

@@ -33,13 +33,13 @@ $(document).ready(function() {
 
 function newMessage(form) {
   var message = form.formToDict();
-  message.game_id = getQueryStringValue("id")
+  message.id = getQueryStringValue("id")
 
   var disabled = form.find("input[type=submit]");
   disabled.disable();
 
   $.postJSON("/a/message/new", message, function(response) {
-    updater.showMessage(response);
+    //updater.showMessage(response);
     form.find("input[type=text]").val("").select();
     disabled.enable();
   });
@@ -52,7 +52,7 @@ var updater = {
   poll: function() {
     var args = {
       "_xsrf": getCookie("_xsrf"),
-      "game_id": getQueryStringValue("id")
+      "id": getQueryStringValue("id")
     };
 
     if (updater.cursor)
@@ -60,7 +60,7 @@ var updater = {
 
     $.ajax({
       url: "/a/message/updates",
-      type: "POST",
+      type: "PUT",
       dataType: "text",
       data: $.param(args),
       success: updater.onSuccess,
@@ -70,7 +70,7 @@ var updater = {
 
   onSuccess: function(response) {
     try {
-      updater.newMessages(eval("(" + response + ")"));
+      updater.newMessages(JSON.parse(response))
     } catch (e) {
       updater.onError();
       return;
@@ -108,7 +108,7 @@ var updater = {
     if (existing.length > 0)
       return;
 
-    var node = $(message.html);
+    var node = $("<div></div>").addClass("message").attr('id', message.id).html(message.body);
     node.hide();
     $("#inbox").append(node);
     node.slideDown();

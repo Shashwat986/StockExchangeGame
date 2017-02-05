@@ -6,6 +6,8 @@ from mongoengine import CASCADE, NULLIFY
 from mongoengine import Document, DynamicDocument, EmbeddedDocument
 from mongoengine.fields import *
 
+import datetime
+
 import os
 
 from dotenv import load_dotenv, find_dotenv
@@ -31,16 +33,11 @@ class PlayerGameInfo(EmbeddedDocument):
   stocks = ListField(EmbeddedDocumentField(StockPlayerInfo))
   player = ReferenceField(User)
 
-  def __init__(self, user):
-    self.player = user
-    self.save()
-
 class Stock(EmbeddedDocument):
   name = StringField(required=True)
   prices = ListField(IntField())
 
 class Game(Document):
-  game_id = UUIDField(required=True, binary=False)
   players = ListField(ReferenceField(User))
   public = BooleanField(default=True)
   players_info = ListField(EmbeddedDocumentField(PlayerGameInfo))
@@ -48,7 +45,7 @@ class Game(Document):
 
   def add_user(self, user):
     self.players.add(user)
-    player_info = PlayerGameInfo(user)
+    player_info = PlayerGameInfo(user, self)
     self.players_info.add(player_info)
     self.save()
 
@@ -63,13 +60,28 @@ class Game(Document):
 class Message(Document):
   game_id = ReferenceField(Game, reverse_delete_rule=CASCADE)
   user_id = ReferenceField(User, reverse_delete_rule=NULLIFY)
-  content = StringField()
+  body = StringField()
+  created_at = DateTimeField()
+
+  meta = {
+    'ordering': ['created_at']
+  }
+
+  def save_(self):
+    if self.created_at is None:
+      self.created_at = datetime.datetime.now()
+    self.save()
+
+  def get_hash(self):
+    return {
+      "id": str(self.id),
+      "body": self.body
+    }
 
 class MessageBuffer(object):
-  def __init__(self, game_id):
+  def __init__(self, game):
     self.waiters = set()
-    self.cache = []
-    self.cache_size = 200
+    self.game = game
 
   def wait_for_messages(self, cursor=None):
     # Construct a Future to return to our caller.  This allows
@@ -78,14 +90,14 @@ class MessageBuffer(object):
     # Future when results are available.
     result_future = Future()
     if cursor:
-      new_count = 0
-      for msg in reversed(self.cache):
-        if msg["id"] == cursor:
-          break
-        new_count += 1
-      if new_count:
-        result_future.set_result(self.cache[-new_count:])
-        return result_future
+      last_message = Message.objects.get(id=cursor)
+      messages = Message.objects(
+        created_at__gt=last_message.created_at,
+        game_id=self.game
+      )
+
+      result_future.set_result(messages)
+      return result_future
     self.waiters.add(result_future)
     return result_future
 
@@ -99,16 +111,16 @@ class MessageBuffer(object):
     for future in self.waiters:
         future.set_result(messages)
     self.waiters = set()
-    self.cache.extend(messages)
-    if len(self.cache) > self.cache_size:
-      self.cache = self.cache[-self.cache_size:]
+
+  def all_messages(self):
+    return list(map(lambda x: x.get_hash(), Message.objects(game_id=self.game)))
 
 class GlobalMessageBuffer(object):
   def __init__(self):
     self.messages = {}
 
-  def find(self, game_id):
-    if game_id not in self.messages:
-      self.messages[game_id] = MessageBuffer()
+  def find(self, game):
+    if str(game.id) not in self.messages:
+      self.messages[str(game.id)] = MessageBuffer(game)
 
-    return self.messages[game_id]
+    return self.messages[str(game.id)]

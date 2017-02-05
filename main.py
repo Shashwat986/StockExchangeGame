@@ -26,21 +26,14 @@ from tornado.options import define, options, parse_command_line
 define("port", default=os.environ.get("PORT", 8888), help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
 
-from controllers import *
+from routes import routes
 
 def main():
   parse_command_line()
   print("Debug Mode: ", options.debug)
   print("Port: ", options.port)
   app = tornado.web.Application(
-    [
-      (r"/", MainHandler),
-      (r"/logout", LogoutHandler),
-      (r"/game", GameHandler),
-      (r"/game/(.*)", GameHandler),
-      (r"/a/message/new", MessageNewHandler),
-      (r"/a/message/updates", MessageUpdatesHandler),
-    ],
+    routes,
     cookie_secret=os.environ.get("SECRET_KEY"),
     template_path=os.path.join(os.path.dirname(__file__), "templates"),
     static_path=os.path.join(os.path.dirname(__file__), "static"),

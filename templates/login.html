@@ -1,0 +1,17 @@
+{% if current_user %}
+  <div class="right">
+    <div class="chip mT">
+      {{ current_user.username }}
+      <a href='/logout'><i class="material-icons close">power_settings_new</i></a>
+    </div>
+  </div>
+{% else %}
+  <form action="/" method="POST">
+    <div class="input-field">
+      <input type="text" name="username" class="col s10">
+      <label for="username">Username</label>
+    </div>
+    {% module xsrf_form_html() %}
+    <input type="submit" value="Login" class="btn col s2">
+  </form>
+{% end %}

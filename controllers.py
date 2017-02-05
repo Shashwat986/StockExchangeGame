@@ -31,6 +31,20 @@ class BaseHandler(tornado.web.RequestHandler):
     self.clear_cookie("flash")
     super().render(*args, **kwargs)
 
+  def game_config(self, g_id = None):
+    if not g_id:
+      g_id = self.get_argument('id', None)
+
+    if g_id:
+      try:
+        self.game = models.Game.objects.get(id=g_id)
+      except (DoesNotExist, ValidationError):
+        self.set_status(400, "Invalid Game ID")
+        self.write("")
+        self.finish()
+    else:
+      self.game = None
+
 class MainHandler(BaseHandler):
   def get(self):
     self.render("index.html")
@@ -66,56 +80,68 @@ class LogoutHandler(BaseHandler):
 
 class GameHandler(BaseHandler):
   def get(self, g_id = None):
-    if not g_id:
-      g_id = self.get_query_argument('id', None)
-
-    if g_id and self.current_user:
-      self.render("game.html", messages=global_message_buffer.find(g_id).cache)
+    self.game_config(g_id)
+    if self.game:
+      self.render("game.html", **{
+        "messages": global_message_buffer.find(self.game).all_messages(),
+        "game": self.game
+      })
     else:
       self.redirect("/")
 
-class MessageNewHandler(BaseHandler):
+  def post(self, g_id = None):
+    self.game_config(g_id)
+    if not self.game:
+      self.game = models.Game()
+      self.game.save()
+
+    user = self.get_current_user()
+    if user:
+      self.game.add_user(user)
+
+    self.redirect("/game/" + self.game.id)
+
+class MessageHandler(BaseHandler):
   @tornado.web.authenticated
   def post(self):
-    message = {
-      "id": str(uuid.uuid4()),
-      "body": self.get_argument("body"),
-    }
+    # Create a new message
+    self.game_config()
 
-    g_id = self.get_argument('game_id', None)
-    if g_id:
-      # to_basestring is necessary for Python 3's json encoder,
-      # which doesn't accept byte strings.
-      message["html"] = tornado.escape.to_basestring(
-        self.render_string("sidebar/message.html", message=message))
+    if self.game:
+      message = models.Message(**{
+        'body': self.get_argument("body"),
+        'user_id': self.get_current_user(),
+        'game_id': self.game
+      })
+      message.save_()
 
-      self.write(message)
-      global_message_buffer.find(g_id).new_messages([message])
+      self.write(message.get_hash())
+      global_message_buffer.find(self.game).new_messages([message])
     else:
       self.set_status(400, "Invalid Game ID")
       self.write("")
 
-class MessageUpdatesHandler(BaseHandler):
   @tornado.web.authenticated
   @gen.coroutine
-  def post(self):
+  def put(self):
+    # Send updates to all waiters
+    self.game_config()
+
     cursor = self.get_argument("cursor", None)
 
-    g_id = self.get_argument('game_id', None)
-    if g_id:
+    if self.game:
       # Save the future returned by wait_for_messages so we can cancel
       # it in wait_for_messages
-      self.future = global_message_buffer.find(g_id).wait_for_messages(cursor=cursor)
-      self.game_id = g_id
+      self.future = global_message_buffer.find(self.game).wait_for_messages(cursor=cursor)
 
       messages = yield self.future
       if self.request.connection.stream.closed():
         return
 
-      self.write(dict(messages=messages))
+      self.write(dict(messages=list(map(lambda x: x.get_hash(), messages))))
     else:
       self.set_status(400, "Invalid Game ID")
       self.write("")
 
   def on_connection_close(self):
-    global_message_buffer.find(self.game_id).cancel_wait(self.future)
+    global_message_buffer.find(self.game).cancel_wait(self.future)

@@ -1,40 +1,21 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tornado Chat Demo</title>
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="{{ static_url("helper.css") }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+{% block heading %}Game{% end %}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="{{ static_url("helper.js") }}" type="text/javascript"></script>
-    <script src="{{ static_url("chat.js") }}" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="row">
-        <div class="col s12">
-          <h3 class="center-align">Hello World</h3>
-          <div class="divider"></div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col s8">
-          <div class="row">
-            {% for stock in ['red', 'purple', 'blue', 'indigo', 'amber', 'brown'] %}
-                {% module Template("stock_card.html", stock=stock) %}
-            {% end %}
-          </div>
-        </div>
-        <div class="col s4">
-          {% module Template("sidebar/sidebar.html", messages=messages) %}
-        </div>
-      </div>
+{% block head %}
+  <script src="{{ static_url("helper.js") }}" type="text/javascript"></script>
+  <script src="{{ static_url("chat.js") }}" type="text/javascript"></script>
+{% end %}
+
+{% block content %}
+  <div class="col s8">
+    <div class="row">
+      {% for stock in ['red', 'purple', 'blue', 'indigo', 'amber', 'brown'] %}
+          {% module Template("stock_card.html", stock=stock) %}
+      {% end %}
     </div>
-  </body>
-</html>
+  </div>
+  <div class="col s4">
+    {% module Template("sidebar/sidebar.html", messages=messages) %}
+  </div>
+{% end %}
