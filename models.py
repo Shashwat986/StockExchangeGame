@@ -2,6 +2,7 @@ import logging
 from tornado.concurrent import Future
 
 from mongoengine import connect
+from mongoengine import CASCADE, NULLIFY
 from mongoengine import Document, DynamicDocument, EmbeddedDocument
 from mongoengine.fields import *
 
@@ -59,8 +60,13 @@ class Game(Document):
     return len(self.players)
 
 # Message Models
+class Message(Document):
+  game_id = ReferenceField(Game, reverse_delete_rule=CASCADE)
+  user_id = ReferenceField(User, reverse_delete_rule=NULLIFY)
+  content = StringField()
+
 class MessageBuffer(object):
-  def __init__(self):
+  def __init__(self, game_id):
     self.waiters = set()
     self.cache = []
     self.cache_size = 200
