@@ -90,7 +90,7 @@ class GameHandler(BaseHandler):
           "messages": global_message_buffer.find(self.game).all_messages(),
           "game": self.game
         })
-        self.finish()
+        return
 
     self.redirect("/")
 
