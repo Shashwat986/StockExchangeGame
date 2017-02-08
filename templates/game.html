@@ -10,8 +10,8 @@
 {% block content %}
   <div class="col s8">
     <div class="row">
-      {% for stock in ['red', 'purple', 'blue', 'indigo', 'amber', 'brown'] %}
-          {% module Template("stock_card.html", stock=stock) %}
+      {% for i, stock in enumerate(game.stocks) %}
+          {% module Template("stock_card.html", game=game, stock=stock, index=i) %}
       {% end %}
     </div>
   </div>

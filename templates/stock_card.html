@@ -1,26 +1,25 @@
+{% set stock_colors = ['red', 'purple', 'blue', 'indigo', 'amber', 'brown'] %}
 <div class="col s12">
-  <div class="card {{ stock }} lighten-5 hoverable">
+  <div class="card {{ stock_colors[index] }} lighten-5 hoverable">
     <div class="card-content">
-      <span class="card-title">STOCK @ $$$</span>
+      <span class="card-title">{{ stock.name }} @ {{ stock.current_price() }}</span>
       <table class="center-align responsive-table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>User</th>
-            <th>User</th>
-            <th>User</th>
-            <th>User</th>
-            <th>User</th>
+            {% for player_info in game.players_info %}
+              <th>
+                {{ player_info.player.username }}
+              </th>
+            {% end %}
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>XXX</td>
-            <td>XXX</td>
-            <td>XXX</td>
-            <td>XXXXXX</td>
-            <td>XXX</td>
-            <td>XXX</td>
+            {% for player_info in game.players_info %}
+              <td>
+                {{ player_info.stocks.get(stock_id=index).num_shares }}
+              </td>
+            {% end %}
           </tr>
         </tbody>
       </table>

@@ -5,8 +5,7 @@ import uuid
 
 from mongoengine.errors import *
 import models
-
-global_message_buffer = models.GlobalMessageBuffer()
+from models import global_message_buffer
 
 class BaseHandler(tornado.web.RequestHandler):
   def get_current_user(self):
@@ -99,7 +98,7 @@ class GameHandler(BaseHandler):
     self.game_config(g_id)
     if not self.game:
       self.game = models.Game()
-      self.game.save()
+      self.game.setup()
 
     user = self.get_current_user()
     self.game.add_user(user)

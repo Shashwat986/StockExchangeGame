@@ -7,6 +7,8 @@ from mongoengine import Document, DynamicDocument, EmbeddedDocument
 from mongoengine.fields import *
 
 import datetime
+import random
+import string
 
 import os
 
@@ -27,26 +29,66 @@ class User(Document):
 # Game Models
 class StockPlayerInfo(EmbeddedDocument):
   stock_id = IntField(required=True)
-  player = ReferenceField(User)
+  num_shares = IntField(default=0)
 
 class PlayerGameInfo(EmbeddedDocument):
-  stocks = ListField(EmbeddedDocumentField(StockPlayerInfo))
+  stocks = EmbeddedDocumentListField(StockPlayerInfo)
   player = ReferenceField(User)
 
 class Stock(EmbeddedDocument):
   name = StringField(required=True)
   prices = ListField(IntField())
 
+  def current_price(self):
+    return self.prices[-1]
+
 class Game(Document):
-  players = ListField(ReferenceField(User))
   public = BooleanField(default=True)
-  players_info = ListField(EmbeddedDocumentField(PlayerGameInfo))
-  stocks = ListField(EmbeddedDocumentField(Stock))
+  status = IntField(default=0)
+  '''
+    0: Not started
+    10: Setup
+    20: In progress
+    30: Completed
+  '''
+  turn = IntField(default=0)
+  players_info = EmbeddedDocumentListField(PlayerGameInfo)
+  stocks = EmbeddedDocumentListField(Stock)
+
+  def setup(self, num_stocks = 5):
+    stocks_keys = set()
+    for _ in range(num_stocks):
+      while True:
+        stock_name = "".join(
+          random.sample(
+            string.ascii_uppercase,
+            random.randint(3, 5)
+          )
+        )
+        if stock_name not in stocks_keys: break
+
+      stock_value = random.randint(1, 20) * 5
+
+      stock = Stock(name=stock_name)
+      stock.prices.append(stock_value)
+      self.stocks.append(stock)
+
+      self.status = 10
+      self.save()
+
+  @property
+  def players(self):
+    return [player_info.player for player_info in self.players_info]
 
   def add_user(self, user):
+    if self.status != 10: return False
     if user not in self.players:
-      self.players.append(user)
       player_info = PlayerGameInfo(player=user)
+
+      for i, stock in enumerate(self.stocks):
+        spi = StockPlayerInfo(stock_id=i, num_shares=0)
+        player_info.stocks.append(spi)
+
       self.players_info.append(player_info)
       self.save()
 
@@ -82,6 +124,10 @@ class Message(Document):
       "id": str(self.id),
       "body": self.body
     }
+
+  def send(self):
+    global_message_buffer.find(self.game).new_messages([self])
+
 
 class MessageBuffer(object):
   def __init__(self, game):
@@ -129,3 +175,5 @@ class GlobalMessageBuffer(object):
       self.messages[str(game.id)] = MessageBuffer(game)
 
     return self.messages[str(game.id)]
+
+global_message_buffer = GlobalMessageBuffer()
